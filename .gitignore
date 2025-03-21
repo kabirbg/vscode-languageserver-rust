@@ -1,5 +1,7 @@
 out
 node_modules
+target
+server-rust/target
 client/server
 .vscode-test
 tsconfig.tsbuildinfo
