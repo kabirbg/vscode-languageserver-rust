@@ -21,5 +21,9 @@
     "compile": "tsc -b",
     "watch": "tsc -b -w",
     "postinstall": "cd client && npm install && cd ../server && cargo build && cd .."
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.7",
+    "globals": "^16.0.0"
   }
 }
