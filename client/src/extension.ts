@@ -16,13 +16,13 @@ export function activate(context: ExtensionContext) {
   const serverOptions: ServerOptions = {
     run: {
       command: context.asAbsolutePath(
-        path.join("server-rust", "target", "release", "server")
+        path.join("server", "target", "release", "server")
       ),
       transport: TransportKind.stdio,
     },
     debug: {
       command: context.asAbsolutePath(
-        path.join("server-rust", "target", "debug", "server")
+        path.join("server", "target", "debug", "server")
       ),
       transport: TransportKind.stdio,
     },
