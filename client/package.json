@@ -14,8 +14,6 @@
   },
   "dependencies": {
     "vscode-languageclient": "^8.1.0",
-    "websocket": "^1.0.35",
-    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@types/vscode": "^1.81.0"
