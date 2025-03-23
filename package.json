@@ -10,7 +10,7 @@
     "vscode": "^1.75.0"
   },
   "activationEvents": [
-    "onLanguage"
+    "onLanguage:Mech"
   ],
   "main": "./client/out/extension",
   "contributes": {
@@ -20,17 +20,6 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd .."
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.22.0",
-    "@types/node": "^20.5.7",
-    "eslint": "^9.22.0",
-    "globals": "^16.0.0",
-    "typescript": "^5.2.2",
-    "typescript-eslint": "^8.27.0"
-  },
-  "dependencies": {
-    "prettier": "^3.5.3"
+    "postinstall": "cd client && npm install && cd ../server && cargo build && cd .."
   }
 }
