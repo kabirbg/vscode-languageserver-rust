@@ -1,12 +1,11 @@
 use tower_lsp_server::jsonrpc::Result;
 use tower_lsp_server::lsp_types::*;
 use tower_lsp_server::{ Client, LanguageServer, LspService, Server };
-use tokio::fs;
-use anyhow::Context;
 
 #[derive(Debug)]
 struct Backend {
     client: Client,
+    // At this stage, dictionary of keywords is stored as part of the backend struct
     dictionary: Vec<String>,
 }
 
@@ -18,6 +17,7 @@ impl LanguageServer for Backend {
                 version: Some("0.0.1".to_string()),
             }),
             capabilities: ServerCapabilities {
+                // Currently only providing basic completion capability
                 text_document_sync: Some(
                     TextDocumentSyncCapability::Kind(TextDocumentSyncKind::INCREMENTAL)
                 ),
@@ -28,10 +28,12 @@ impl LanguageServer for Backend {
                     all_commit_characters: None,
                     ..Default::default()
                 }),
-                execute_command_provider: Some(ExecuteCommandOptions {
+                // This one might be the key to how to get Mech working (i.e., run code on the server)???
+                // But not implemented yet.
+                /* execute_command_provider: Some(ExecuteCommandOptions {
                     commands: vec!["dummy.do_something".to_string()],
                     work_done_progress_options: Default::default(),
-                }),
+                }),*/
                 ..ServerCapabilities::default()
             },
         })
@@ -45,7 +47,8 @@ impl LanguageServer for Backend {
         Ok(())
     }
 
-    async fn execute_command(&self, _: ExecuteCommandParams) -> Result<Option<LSPAny>> {
+    // Keeping this code around from the example, might want to try implementing it next
+    /*async fn execute_command(&self, _: ExecuteCommandParams) -> Result<Option<LSPAny>> {
         self.client.log_message(MessageType::INFO, "command executed!").await;
 
         match self.client.apply_edit(WorkspaceEdit::default()).await {
@@ -55,7 +58,7 @@ impl LanguageServer for Backend {
         }
 
         Ok(None)
-    }
+    }*/
 
     async fn did_open(&self, _: DidOpenTextDocumentParams) {
         self.client.log_message(MessageType::INFO, "file opened!").await;
@@ -74,11 +77,13 @@ impl LanguageServer for Backend {
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+        // Get the prefix (whatever's currently being typed) from params
         let prefix = params.context
             .as_ref()
             .and_then(|ctx| ctx.trigger_character.as_deref())
             .unwrap_or_default();
 
+        // Get a list of items from the dictionary that match the prefix
         let items = self.dictionary
             .iter()
             .filter(|word| word.starts_with(prefix))
@@ -90,8 +95,11 @@ impl LanguageServer for Backend {
     }
 }
 
+// Load dictionary from file into a vector once, when server is started
 async fn load_word_list(path: impl AsRef<std::path::Path>) -> anyhow::Result<Vec<String>> {
-    let content = fs
+    use anyhow::Context;
+
+    let content = tokio::fs
         ::read_to_string(&path).await
         .with_context(|| format!("Failed to read word list from {}", path.as_ref().display()))?;
 
@@ -106,6 +114,8 @@ async fn load_word_list(path: impl AsRef<std::path::Path>) -> anyhow::Result<Vec
 
 #[tokio::main]
 async fn main() {
+    // honestly no clue what this line does and not bothered to find out
+    // but this is the only line that uses the tracing_subscriber crate
     tracing_subscriber::fmt().init();
 
     let (stdin, stdout) = (tokio::io::stdin(), tokio::io::stdout());
